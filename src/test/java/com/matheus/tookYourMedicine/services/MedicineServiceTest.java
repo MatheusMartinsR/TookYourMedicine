@@ -1,11 +1,13 @@
 package com.matheus.tookYourMedicine.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import com.matheus.tookYourMedicine.dto.MedicineCreateDTO;
 import com.matheus.tookYourMedicine.dto.MedicineDTO;
 import com.matheus.tookYourMedicine.entity.UserEntity;
+import com.matheus.tookYourMedicine.exception.NotFoundException;
 import com.matheus.tookYourMedicine.producer.MedicineProducer;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -59,14 +61,14 @@ class MedicineServiceTest {
   }
 
   @Test
-  void shouldReturnFalseWhenMedicineNotFound() {
-    boolean result = medicineService.markAsTaken(UUID.randomUUID());
-    assertFalse(result);
+  void shouldThrowNotFoundWhenMedicineNotFound() {
+    UUID randomId = UUID.randomUUID();
+    assertThrows(NotFoundException.class, () -> medicineService.findMedicineById(randomId));
   }
 
   @Test
-  void shouldReturnNullWhenMedicineNotFound() {
-    MedicineDTO result = medicineService.findMedicineById(UUID.randomUUID());
-    assertNull(result);
+  void shouldThrowNotFoundWhenMarkingNonExistentMedicine() {
+    UUID randomId = UUID.randomUUID();
+    assertThrows(NotFoundException.class, () -> medicineService.markAsTaken(randomId));
   }
 }

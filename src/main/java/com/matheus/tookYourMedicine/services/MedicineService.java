@@ -4,6 +4,7 @@ import com.matheus.tookYourMedicine.dto.MedicineCreateDTO;
 import com.matheus.tookYourMedicine.dto.MedicineDTO;
 import com.matheus.tookYourMedicine.entity.MedicineEntity;
 import com.matheus.tookYourMedicine.entity.UserEntity;
+import com.matheus.tookYourMedicine.exception.NotFoundException;
 import com.matheus.tookYourMedicine.message.MedicineMessage;
 import com.matheus.tookYourMedicine.producer.MedicineProducer;
 import java.util.HashMap;
@@ -60,25 +61,20 @@ public class MedicineService {
 
   @Cacheable(value = "medicine", key = "#id")
   public MedicineDTO findMedicineById(UUID id) {
-    System.out.println("fetching data from Map, not from redis" + id);
-    MedicineEntity medicineEntity = medicines.get(id);
-
-    if (medicineEntity == null) {
-      return null;
+    MedicineEntity medicine = medicines.get(id);
+    if (medicine == null) {
+      throw new NotFoundException("Medicine not found with id: " + id);
     }
     return new MedicineDTO(
-        medicineEntity.getId(),
-        medicineEntity.getMedicineName(),
-        medicineEntity.getQuantityPerDay(),
-        medicineEntity.getHourToTake(),
-        medicineEntity.getUser() != null ? medicineEntity.getUser().getId() : null,
-        medicineEntity.getTake());
+        medicine.getId(),
+        medicine.getMedicineName(),
+        medicine.getQuantityPerDay(),
+        medicine.getHourToTake(),
+        medicine.getUser() != null ? medicine.getUser().getId() : null,
+        medicine.getTake());
   }
 
-  @Cacheable(
-      value = "medicine",
-      key = "#name.toLowerCase()",
-      unless = "#result == null") // unless avoid caching null results
+  @Cacheable(value = "medicine", key = "#name.toLowerCase()", unless = "#result == null")
   public MedicineDTO findMedicineByName(String name) {
     System.out.println("fetching data from Map, not from redis" + name);
     MedicineEntity medicineEntity =
@@ -123,7 +119,9 @@ public class MedicineService {
       })
   public boolean markAsTaken(UUID id) {
     MedicineEntity medicine = medicines.get(id);
-    if (medicine == null) return false;
+    if (medicine == null) {
+      throw new NotFoundException("Medicine not found with id: " + id);
+    }
     medicine.setTake(true);
     return true;
   }

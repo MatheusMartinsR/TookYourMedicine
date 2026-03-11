@@ -20,12 +20,8 @@ public class MedicineController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<MedicineDTO> findMedicineById(@PathVariable UUID id) {
-    MedicineDTO medicine = medicineService.findMedicineById(id);
-    if (medicine == null) {
-      return ResponseEntity.notFound().build();
-    }
-    return ResponseEntity.ok(medicine);
+  public ResponseEntity<MedicineDTO> findById(@PathVariable UUID id) {
+    return ResponseEntity.ok(medicineService.findMedicineById(id));
   }
 
   @GetMapping("/name")
@@ -52,10 +48,7 @@ public class MedicineController {
 
   @PutMapping("/{id}/taken")
   public ResponseEntity<Void> markAsTaken(@PathVariable UUID id) {
-    boolean updated = medicineService.markAsTaken(id);
-    if (!updated) {
-      return ResponseEntity.notFound().build();
-    }
+    medicineService.markAsTaken(id);
     return ResponseEntity.ok().build();
   }
 
