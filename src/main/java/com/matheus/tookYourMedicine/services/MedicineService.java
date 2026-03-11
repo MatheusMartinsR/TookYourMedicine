@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -112,6 +114,18 @@ public class MedicineService {
                     userId,
                     m.getTake()))
         .toList();
+  }
+
+  @Caching(
+      evict = {
+        @CacheEvict(value = "medicine", key = "#id"),
+        @CacheEvict(value = "medicineByUser", allEntries = true)
+      })
+  public boolean markAsTaken(UUID id) {
+    MedicineEntity medicine = medicines.get(id);
+    if (medicine == null) return false;
+    medicine.setTake(true);
+    return true;
   }
 
   public boolean deleteMedicineById(UUID id) {
