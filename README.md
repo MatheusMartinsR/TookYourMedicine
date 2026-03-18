@@ -17,21 +17,24 @@ Never forget to take your medicine again! This application allows you to registe
 - Mark medication as taken to stop reminders
 - Fast data retrieval via Redis caching
 - User management
+- Custom exception handling with meaningful error responses
+- Unit tests with JUnit 5 and Mockito
 
 ---
 
 ## 🛠️ Technologies
 
-| Technology | Purpose |
-|---|---|
-| **Java 21** | Main programming language |
-| **Spring Boot 4** | Application framework |
-| **RabbitMQ** | Message queue for medicine reminders |
-| **Redis** | Caching layer for fast data access |
-| **Docker / Docker Compose** | Container orchestration |
-| **Jenkins** | CI/CD pipeline |
-| **Lombok** | Boilerplate code reduction |
-| **Jackson** | JSON serialization/deserialization |
+| Technology                  | Purpose                              |
+| --------------------------- | ------------------------------------ |
+| **Java 17**                 | Main programming language            |
+| **Spring Boot 4**           | Application framework                |
+| **RabbitMQ**                | Message queue for medicine reminders |
+| **Redis**                   | Caching layer for fast data access   |
+| **Docker / Docker Compose** | Container orchestration              |
+| **Jenkins**                 | CI/CD pipeline                       |
+| **Lombok**                  | Boilerplate code reduction           |
+| **Jackson**                 | JSON serialization/deserialization   |
+| **JUnit 5 + Mockito**       | Unit testing                         |
 
 ---
 
@@ -58,28 +61,40 @@ POST /medicines
 
 ```
 src/
-├── config/
-│   ├── RabbitMQConfig.java       # RabbitMQ queues, exchanges and bindings
-│   └── RedisConfig.java          # Redis cache configuration
-├── consumer/
-│   └── MedicineConsumer.java     # Reads from queue and triggers reminders
-├── controller/
-│   ├── MedicineController.java
-│   └── UserController.java
-├── dto/
-│   ├── MedicineCreateDTO.java
-│   ├── MedicineDTO.java
-│   └── UserDTO.java
-├── entity/
-│   ├── MedicineEntity.java
-│   └── UserEntity.java
-├── message/
-│   └── MedicineMessage.java      # RabbitMQ message payload
-├── producer/
-│   └── MedicineProducer.java     # Publishes messages to RabbitMQ
-└── services/
-    ├── MedicineService.java
-    └── UserService.java
+├── main/
+│   └── java/
+│       └── com/matheus/tookYourMedicine/
+│           ├── config/
+│           │   ├── RabbitMQConfig.java       # RabbitMQ queues, exchanges and bindings
+│           │   └── RedisConfig.java          # Redis cache configuration
+│           ├── consumer/
+│           │   └── MedicineConsumer.java     # Reads from queue and triggers reminders
+│           ├── controller/
+│           │   ├── MedicineController.java
+│           │   └── UserController.java
+│           ├── dto/
+│           │   ├── MedicineCreateDTO.java
+│           │   ├── MedicineDTO.java
+│           │   └── UserDTO.java
+│           ├── entity/
+│           │   ├── MedicineEntity.java
+│           │   └── UserEntity.java
+│           ├── exception/
+│           │   ├── ErrorResponse.java        # Standard error response format
+│           │   ├── GlobalExceptionHandler.java # Centralized exception handling
+│           │   └── NotFoundException.java    # Custom 404 exception
+│           ├── message/
+│           │   └── MedicineMessage.java      # RabbitMQ message payload
+│           ├── producer/
+│           │   └── MedicineProducer.java     # Publishes messages to RabbitMQ
+│           └── services/
+│               ├── MedicineService.java
+│               └── UserService.java
+└── test/
+    └── java/
+        └── com/matheus/tookYourMedicine/
+            └── services/
+                └── MedicineServiceTest.java  # Unit tests with JUnit 5 + Mockito
 ```
 
 ---
@@ -87,30 +102,39 @@ src/
 ## 🚀 Running the Application
 
 ### Prerequisites
+
 - Docker and Docker Compose installed
-- Java 21+
+- Java 17+
 - Maven
 
 ### Steps
 
 **1. Build the project:**
+
 ```bash
 ./mvnw clean package -DskipTests
 ```
 
 **2. Start all services:**
+
 ```bash
 docker compose up -d
 ```
 
-**3. Access the services:**
+**3. Run the application:**
 
-| Service | URL |
-|---|---|
-| Application | http://localhost:8080 |
+```bash
+./mvnw spring-boot:run
+```
+
+**4. Access the services:**
+
+| Service     | URL                    |
+| ----------- | ---------------------- |
+| Application | http://localhost:8080  |
 | RabbitMQ UI | http://localhost:15672 |
-| Jenkins | http://localhost:8090 |
-| Redis | localhost:6379 |
+| Jenkins     | http://localhost:8090  |
+| Redis       | localhost:6379         |
 
 > RabbitMQ default credentials: `guest / guest`
 
@@ -119,32 +143,71 @@ docker compose up -d
 ## 📡 API Endpoints
 
 ### Users
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/users` | Create a new user |
-| `GET` | `/users` | List all users |
-| `DELETE` | `/users/{id}` | Delete a user |
+
+| Method   | Endpoint      | Description       |
+| -------- | ------------- | ----------------- |
+| `POST`   | `/users`      | Create a new user |
+| `GET`    | `/users`      | List all users    |
+| `DELETE` | `/users/{id}` | Delete a user     |
 
 ### Medicines
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/medicines` | Register a new medicine (triggers reminder queue) |
-| `GET` | `/medicines/{id}` | Find medicine by ID |
-| `GET` | `/medicines/name/{name}` | Find medicine by name |
-| `GET` | `/medicines/user/{userId}` | Find medicines by user |
-| `PUT` | `/medicines/{id}/taken` | Mark medicine as taken |
-| `DELETE` | `/medicines/{id}` | Delete a medicine |
+
+| Method   | Endpoint                   | Description                                       |
+| -------- | -------------------------- | ------------------------------------------------- |
+| `POST`   | `/medicines/create`        | Register a new medicine (triggers reminder queue) |
+| `GET`    | `/medicines/{id}`          | Find medicine by ID                               |
+| `GET`    | `/medicines/name/{name}`   | Find medicine by name                             |
+| `GET`    | `/medicines/user/{userId}` | Find medicines by user                            |
+| `PUT`    | `/medicines/{id}/taken`    | Mark medicine as taken                            |
+| `DELETE` | `/medicines/{id}`          | Delete a medicine                                 |
+
+---
+
+## ⚠️ Exception Handling
+
+Custom exceptions return structured error responses instead of generic 500 errors:
+
+```json
+{
+  "status": 404,
+  "error": "Not Found",
+  "message": "Medicine not found with id: 8093da31-2a4b-4ccb-a571-9297864d6223",
+  "timestamp": "2026-03-11T11:30:00"
+}
+```
+
+| Exception           | HTTP Status | When                       |
+| ------------------- | ----------- | -------------------------- |
+| `NotFoundException` | 404         | Medicine or user not found |
+| `Exception`         | 500         | Unexpected internal errors |
+
+---
+
+## 🧪 Running Tests
+
+```bash
+./mvnw test
+```
+
+Unit tests cover the following scenarios:
+
+| Test                                                | Description                                            |
+| --------------------------------------------------- | ------------------------------------------------------ |
+| `shouldCreateMedicineWithTakeFalse`                 | Medicine is created with take=false                    |
+| `shouldMarkMedicineAsTaken`                         | Medicine take is updated to true                       |
+| `shouldThrowNotFoundWhenMedicineNotFound`           | NotFoundException thrown for invalid ID                |
+| `shouldThrowNotFoundWhenMarkingNonExistentMedicine` | NotFoundException thrown when marking unknown medicine |
 
 ---
 
 ## 📨 RabbitMQ Queue Flow
 
-| Queue | Role |
-|---|---|
-| `medicine.exchange` | Entry point — receives published messages |
-| `medicine.waiting` | Waiting room — holds message for 1 hour (TTL) |
-| `medicine.dlx` | Dead Letter Exchange — redirects expired messages |
-| `medicine.queue` | Final destination — consumer reads and triggers reminder |
+| Queue               | Role                                                     |
+| ------------------- | -------------------------------------------------------- |
+| `medicine.exchange` | Entry point — receives published messages                |
+| `medicine.waiting`  | Waiting room — holds message for 1 hour (TTL)            |
+| `medicine.dlx`      | Dead Letter Exchange — redirects expired messages        |
+| `medicine.queue`    | Final destination — consumer reads and triggers reminder |
 
 ---
 
