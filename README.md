@@ -65,8 +65,9 @@ src/
 │   └── java/
 │       └── com/matheus/tookYourMedicine/
 │           ├── config/
+│           │   ├── CacheConfig.java          # Redis cache TTL and settings
 │           │   ├── RabbitMQConfig.java       # RabbitMQ queues, exchanges and bindings
-│           │   └── RedisConfig.java          # Redis cache configuration
+│           │   └── RedisConfig.java          # Redis connection configuration
 │           ├── consumer/
 │           │   └── MedicineConsumer.java     # Reads from queue and triggers reminders
 │           ├── controller/
@@ -144,11 +145,12 @@ docker compose up -d
 
 ### Users
 
-| Method   | Endpoint      | Description       |
-| -------- | ------------- | ----------------- |
-| `POST`   | `/users`      | Create a new user |
-| `GET`    | `/users`      | List all users    |
-| `DELETE` | `/users/{id}` | Delete a user     |
+| Method   | Endpoint             | Description       |
+| -------- | -------------------- | ----------------- |
+| `POST`   | `/users/create`      | Create a new user |
+| `GET`    | `/users/all`         | List all users    |
+| `GET`    | `/users/{id}`        | List a user by ID |
+| `DELETE` | `/users/delete/{id}` | Delete a user     |
 
 ### Medicines
 
@@ -159,7 +161,7 @@ docker compose up -d
 | `GET`    | `/medicines/name/{name}`   | Find medicine by name                             |
 | `GET`    | `/medicines/user/{userId}` | Find medicines by user                            |
 | `PUT`    | `/medicines/{id}/taken`    | Mark medicine as taken                            |
-| `DELETE` | `/medicines/{id}`          | Delete a medicine                                 |
+| `DELETE` | `/medicines/delete/{id}`   | Delete a medicine by ID                           |
 
 ---
 
