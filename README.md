@@ -28,6 +28,7 @@ Never forget to take your medicine again! This application allows you to registe
 | --------------------------- | ------------------------------------ |
 | **Java 17**                 | Main programming language            |
 | **Spring Boot 4**           | Application framework                |
+| **PostgreSQL**              | Relational database                  |
 | **RabbitMQ**                | Message queue for medicine reminders |
 | **Redis**                   | Caching layer for fast data access   |
 | **Docker / Docker Compose** | Container orchestration              |
@@ -108,6 +109,22 @@ src/
 - Java 17+
 - Maven
 
+### Environment Setup
+
+Copy `.env.example` to `.env` and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+```env
+POSTGRES_DB=
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+RABBITMQ_USER=
+RABBITMQ_PASS=
+```
+
 ### Steps
 
 **1. Build the project:**
@@ -136,8 +153,7 @@ docker compose up -d
 | RabbitMQ UI | http://localhost:15672 |
 | Jenkins     | http://localhost:8090  |
 | Redis       | localhost:6379         |
-
-> RabbitMQ default credentials: `guest / guest`
+| PostgreSQL  | localhost:5432         |
 
 ---
 
@@ -149,7 +165,7 @@ docker compose up -d
 | -------- | -------------------- | ----------------- |
 | `POST`   | `/users/create`      | Create a new user |
 | `GET`    | `/users/all`         | List all users    |
-| `GET`    | `/users/{id}`        | List a user by ID |
+| `GET`    | `/users/{id}`        | Find a user by ID |
 | `DELETE` | `/users/delete/{id}` | Delete a user     |
 
 ### Medicines
@@ -229,8 +245,9 @@ The project includes a `Jenkinsfile` with the following pipeline stages:
 
 ```yaml
 services:
-  app       # Spring Boot application (port 8080)
-  rabbitmq  # Message broker (ports 5672, 15672)
-  redis     # Cache layer (port 6379)
-  jenkins   # CI/CD server (port 8090)
+  app        # Spring Boot application (port 8080)
+  rabbitmq   # Message broker (ports 5672, 15672)
+  redis      # Cache layer (port 6379)
+  postgres   # Relational database (port 5432)
+  jenkins    # CI/CD server (port 8090)
 ```
