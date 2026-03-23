@@ -1,0 +1,8 @@
+CREATE SCHEMA IF NOT EXISTS medicine;
+
+CREATE TABLE medicine.users (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
